@@ -13,89 +13,58 @@ if theme_toggle:
     bg = "#0f172a"
     card = "#1e293b"
     text = "#ffffff"
-    subtext = "#cbd5f5"
 else:
     bg = "#f1f5f9"
     card = "#ffffff"
     text = "#111827"
-    subtext = "#374151"
 
-# ---------- STYLE (FULL FIX) ----------
+# ---------- STYLE ----------
 st.markdown(f"""
 <style>
-
-/* App background */
 .stApp {{
     background-color: {bg};
     color: {text};
 }}
 
-/* ALL TEXT FIX */
 h1, h2, h3, h4, h5, h6, p, label, span {{
     color: {text} !important;
 }}
 
-/* Sidebar text fix */
-section[data-testid="stSidebar"] * {{
-    color: {text} !important;
-}}
-
-/* Radio buttons FIX */
-.stRadio label {{
-    color: {text} !important;
-    font-weight: 500;
-}}
-
-/* Input fields */
-.stTextInput input, .stNumberInput input {{
-    background-color: {"#111827" if theme_toggle else "#ffffff"} !important;
-    color: {text} !important;
-    border-radius: 10px;
-}}
-
-/* Cards */
 .card {{
     background-color: {card};
     padding: 15px;
     border-radius: 15px;
     margin-bottom: 12px;
-    color: {text};
 }}
 
-/* Buttons */
+.stTextInput input, .stNumberInput input {{
+    border-radius: 10px;
+}}
+
 .stButton button {{
     height: 45px;
     border-radius: 10px;
     font-weight: bold;
 }}
-
-/* Dataframe */
-.stDataFrame {{
-    color: {text} !important;
-}}
-
-/* Fix alerts */
-.stAlert {{
-    color: black !important;
-}}
-
 </style>
 """, unsafe_allow_html=True)
 
 # ---------- FUNCTIONS ----------
 def load_users():
     if os.path.exists("users.json"):
-        return json.load(open("users.json"))
+        with open("users.json", "r") as f:
+            return json.load(f)
     return {}
 
 def save_users(users):
-    json.dump(users, open("users.json", "w"))
+    with open("users.json", "w") as f:
+        json.dump(users, f, indent=4)
 
 def save_data(data, file):
-    json.dump(data, open(file, "w"))
+    with open(file, "w") as f:
+        json.dump(data, f, indent=4)
 
-users = load_users()
-
+# ---------- SESSION ----------
 if "user" not in st.session_state:
     st.session_state.user = None
 
@@ -104,24 +73,38 @@ if st.session_state.user is None:
 
     st.markdown("<h2 style='text-align:center;'>💰 BudgetBot</h2>", unsafe_allow_html=True)
 
+    users = load_users()
+
     mode = st.radio("", ["Login", "Register"], horizontal=True)
 
-    u = st.text_input("Username")
-    p = st.text_input("Password", type="password")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
+    # LOGIN
     if mode == "Login":
         if st.button("Login", use_container_width=True):
-            if u in users and users[u]["password"] == p:
-                st.session_state.user = u
+
+            users = load_users()
+
+            if username in users and users[username]["password"] == password:
+                st.session_state.user = username
+                st.success("Login successful")
                 st.rerun()
             else:
                 st.error("Invalid credentials")
 
+    # REGISTER
     else:
         if st.button("Register", use_container_width=True):
-            users[u] = {"password": p}
-            save_users(users)
-            st.success("Registered successfully")
+
+            users = load_users()
+
+            if username in users:
+                st.warning("User already exists")
+            else:
+                users[username] = {"password": password}
+                save_users(users)
+                st.success("Registered successfully")
 
 # ---------- MAIN ----------
 if st.session_state.user:
@@ -129,6 +112,7 @@ if st.session_state.user:
     user = st.session_state.user
     file = f"{user}_data.json"
 
+    # Load user data
     if os.path.exists(file):
         data = json.load(open(file))
         if isinstance(data, list):
@@ -145,7 +129,7 @@ if st.session_state.user:
             st.session_state.user = None
             st.rerun()
 
-    # NAV
+    # NAVIGATION
     menu = st.radio("", ["🏠 Dashboard", "➕ Add", "📋 Expenses"], horizontal=True)
 
     # INCOME
@@ -228,9 +212,11 @@ if st.session_state.user:
 
                 col1, col2 = st.columns(2)
 
+                # EDIT
                 if col1.button("Edit", key=f"edit{i}"):
                     st.session_state.edit_index = i
 
+                # DELETE
                 if col2.button("Delete", key=f"del{i}"):
                     data["expenses"].remove(exp)
                     save_data(data, file)
