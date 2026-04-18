@@ -4,50 +4,8 @@ from datetime import date
 import json
 import os
 
-st.set_page_config(page_title="BudgetBot", page_icon="💰")
-
-# ---------- THEME ----------
-theme_toggle = st.toggle("🌗 Dark Mode", value=True)
-
-if theme_toggle:
-    bg = "#0f172a"
-    card = "#1e293b"
-    text = "#ffffff"
-else:
-    bg = "#f1f5f9"
-    card = "#ffffff"
-    text = "#111827"
-
-# ---------- STYLE ----------
-st.markdown(f"""
-<style>
-.stApp {{
-    background-color: {bg};
-    color: {text};
-}}
-
-h1, h2, h3, h4, h5, h6, p, label, span {{
-    color: {text} !important;
-}}
-
-.card {{
-    background-color: {card};
-    padding: 15px;
-    border-radius: 15px;
-    margin-bottom: 12px;
-}}
-
-.stTextInput input, .stNumberInput input {{
-    border-radius: 10px;
-}}
-
-.stButton button {{
-    height: 45px;
-    border-radius: 10px;
-    font-weight: bold;
-}}
-</style>
-""", unsafe_allow_html=True)
+# ---------- PAGE CONFIG ----------
+st.set_page_config(page_title="SmartExpense Manager", page_icon="💰")
 
 # ---------- FUNCTIONS ----------
 def load_users():
@@ -71,7 +29,7 @@ if "user" not in st.session_state:
 # ---------- LOGIN ----------
 if st.session_state.user is None:
 
-    st.markdown("<h2 style='text-align:center;'>💰 BudgetBot</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>💰 SmartExpense Manager</h2>", unsafe_allow_html=True)
 
     users = load_users()
 
@@ -112,7 +70,19 @@ if st.session_state.user:
     user = st.session_state.user
     file = f"{user}_data.json"
 
-    # Load user data
+    # ---------- HEADER (YOUR VERSION) ----------
+    st.markdown("<h2 style='text-align:center;'>💰 SmartExpense Manager</h2>", unsafe_allow_html=True)
+    st.markdown(f"### 👋 Welcome to SmartExpense Manager, {user}")
+
+    # LOGOUT
+    if st.button("Logout"):
+        st.session_state.user = None
+        st.rerun()
+
+    # ---------- NAVIGATION ----------
+    menu = st.radio("", ["🏠 Dashboard", "➕ Add", "📋 Expenses"], horizontal=True)
+
+    # ---------- LOAD DATA ----------
     if os.path.exists(file):
         data = json.load(open(file))
         if isinstance(data, list):
@@ -120,19 +90,7 @@ if st.session_state.user:
     else:
         data = {"income": 0, "expenses": []}
 
-    # HEADER
-    col1, col2 = st.columns([4,1])
-    with col1:
-        st.markdown(f"### 👋 {user}")
-    with col2:
-        if st.button("Logout"):
-            st.session_state.user = None
-            st.rerun()
-
-    # NAVIGATION
-    menu = st.radio("", ["🏠 Dashboard", "➕ Add", "📋 Expenses"], horizontal=True)
-
-    # INCOME
+    # ---------- INCOME ----------
     income = st.number_input("Monthly Income", value=data["income"])
     data["income"] = income
     save_data(data, file)
@@ -145,13 +103,13 @@ if st.session_state.user:
         total = df["amount"].sum() if not df.empty else 0
         savings = income - total
 
-        st.markdown("### Summary")
+        st.subheader("Summary")
 
-        st.markdown(f"<div class='card'>💸 Expense: ₹{total}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='card'>💰 Savings: ₹{savings}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='card'>📊 Entries: {len(df)}</div>", unsafe_allow_html=True)
+        st.metric("Expense", f"₹{total}")
+        st.metric("Savings", f"₹{savings}")
+        st.metric("Entries", len(df))
 
-        st.markdown("### Insights")
+        st.subheader("Insights")
 
         if total > income:
             st.error("Spending is high")
@@ -160,7 +118,7 @@ if st.session_state.user:
         else:
             st.success("All good")
 
-        st.markdown("### Recent Transactions")
+        st.subheader("Recent Transactions")
 
         if not df.empty:
             st.dataframe(df.tail(3), use_container_width=True)
@@ -170,7 +128,7 @@ if st.session_state.user:
     # ---------- ADD ----------
     elif menu == "➕ Add":
 
-        st.markdown("### Add Expense")
+        st.subheader("Add Expense")
 
         with st.form("form", clear_on_submit=True):
             name = st.text_input("Name")
@@ -191,7 +149,7 @@ if st.session_state.user:
     # ---------- EXPENSES ----------
     elif menu == "📋 Expenses":
 
-        st.markdown("### Expenses")
+        st.subheader("Expenses")
 
         search = st.text_input("Search")
 
@@ -202,19 +160,13 @@ if st.session_state.user:
         if filtered:
             for i, exp in enumerate(filtered):
 
-                st.markdown(f"""
-                <div class='card'>
-                <b>{exp['name']}</b><br>
-                ₹{exp['amount']} | {exp['category']}<br>
-                📅 {exp['date']}
-                </div>
-                """, unsafe_allow_html=True)
+                st.write(f"**{exp['name']}** - ₹{exp['amount']} ({exp['category']})")
 
                 col1, col2 = st.columns(2)
 
                 # EDIT
                 if col1.button("Edit", key=f"edit{i}"):
-                    st.session_state.edit_index = i
+                    st.info("Edit feature can be added here")
 
                 # DELETE
                 if col2.button("Delete", key=f"del{i}"):
