@@ -12,26 +12,21 @@ if "loaded" not in st.session_state:
     st.session_state.loaded = False
 
 if not st.session_state.loaded:
-    st.markdown(
-        """
-        <div style='text-align: center; margin-top: 50px;'>
-            <img src='logo.png' width='150'/>
-            <h1>SmartExpense Manager</h1>
-            <p>Loading your experience...</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=150)
+        st.markdown("<h1 style='text-align:center;'>SmartExpense Manager</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center;'>Loading your experience...</p>", unsafe_allow_html=True)
 
-    progress = st.progress(0)
-    for i in range(100):
-        time.sleep(0.01)
-        progress.progress(i + 1)
+        progress = st.progress(0)
+        for i in range(100):
+            time.sleep(0.01)
+            progress.progress(i + 1)
 
     st.session_state.loaded = True
     st.rerun()
 
-# ---------- CSS ANIMATIONS ----------
+# ---------- CSS ----------
 st.markdown("""
 <style>
 .fade {
@@ -77,16 +72,11 @@ if "user" not in st.session_state:
 # ---------- LOGIN / REGISTER ----------
 if st.session_state.user is None:
 
-    # CENTERED LOGO + TITLE
-    st.markdown(
-        """
-        <div style='text-align: center; margin-top: 20px;'>
-            <img src='logo.png' width='120'/>
-            <h2>SmartExpense Manager</h2>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    # ✅ PERFECT CENTER LOGO (FIXED)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=120)
+        st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
 
     option = st.radio("", ["🔐 Login", "🆕 Register"], horizontal=True)
     users = load_users()
@@ -147,16 +137,11 @@ if st.session_state.user:
     user = st.session_state.user
     file = f"{user}_data.json"
 
-    # HEADER (CENTERED)
-    st.markdown(
-        f"""
-        <div style='text-align: center;'>
-            <img src='logo.png' width='100'/>
-            <h3>SmartExpense Manager</h3>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    # ✅ HEADER WITH CENTERED LOGO
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=100)
+        st.markdown("<h3 style='text-align:center;'>SmartExpense Manager</h3>", unsafe_allow_html=True)
 
     st.markdown(f"### 👋 Welcome, {user}")
 
