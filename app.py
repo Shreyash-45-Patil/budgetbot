@@ -73,34 +73,24 @@ if "user" not in st.session_state:
 if st.session_state.user is None:
 
     # ✅ PERFECT CENTER LOGO (FIXED)
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", width=120)
-        st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
+    st.markdown(
+    """
+    <style>
+    .center-img {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
-    option = st.radio("", ["🔐 Login", "🆕 Register"], horizontal=True)
-    users = load_users()
+st.markdown("<div class='center-img'>", unsafe_allow_html=True)
+st.image("logo.png", width=120)
+st.markdown("</div>", unsafe_allow_html=True)
 
-    # LOGIN
-    if option == "🔐 Login":
-        st.markdown("<div class='fade'>", unsafe_allow_html=True)
-
-        st.subheader("Login to your account")
-        username = st.text_input("Username")
-        password = st.text_input("Password", type="password")
-
-        if st.button("Login", use_container_width=True):
-            users = load_users()
-
-            if username in users and users[username]["password"] == password:
-                st.session_state.user = username
-                st.success("Login successful ✅")
-                st.rerun()
-            else:
-                st.error("Invalid username or password ❌")
-
-        st.markdown("</div>", unsafe_allow_html=True)
-
+st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
     # REGISTER
     else:
         st.markdown("<div class='fade'>", unsafe_allow_html=True)
