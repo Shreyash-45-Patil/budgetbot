@@ -3,9 +3,56 @@ import pandas as pd
 from datetime import date
 import json
 import os
+import time
 
 # ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="SmartExpense Manager", page_icon="💰")
+st.set_page_config(page_title="SmartExpense Manager", page_icon="logo.png")
+
+# ---------- SPLASH SCREEN ----------
+if "loaded" not in st.session_state:
+    st.session_state.loaded = False
+
+if not st.session_state.loaded:
+
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=150)
+        st.markdown("<h1 style='text-align:center;'>SmartExpense Manager</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center;'>Loading your experience...</p>", unsafe_allow_html=True)
+
+        # Loading animation
+        progress = st.progress(0)
+        for i in range(100):
+            time.sleep(0.01)
+            progress.progress(i + 1)
+
+    st.session_state.loaded = True
+    st.rerun()
+
+# ---------- ANIMATION CSS ----------
+st.markdown("""
+<style>
+.fade {
+    animation: fadeIn 0.7s ease-in-out;
+}
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+.card {
+    padding: 15px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.05);
+    margin-bottom: 12px;
+    transition: 0.3s;
+}
+.card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ---------- FUNCTIONS ----------
 def load_users():
@@ -29,40 +76,63 @@ if "user" not in st.session_state:
 # ---------- LOGIN ----------
 if st.session_state.user is None:
 
-    st.markdown("<h2 style='text-align:center;'>💰 SmartExpense Manager</h2>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=120)
+        st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
+
+    option = st.radio("", ["🔐 Login", "🆕 Register"], horizontal=True)
 
     users = load_users()
 
-    mode = st.radio("", ["Login", "Register"], horizontal=True)
-
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
     # LOGIN
-    if mode == "Login":
-        if st.button("Login", use_container_width=True):
+    if option == "🔐 Login":
+        st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
+        st.subheader("Login to your account")
+
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login", use_container_width=True):
             users = load_users()
 
             if username in users and users[username]["password"] == password:
                 st.session_state.user = username
-                st.success("Login successful")
+                st.success("Login successful ✅")
                 st.rerun()
             else:
-                st.error("Invalid credentials")
+                st.error("Invalid username or password ❌")
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
     # REGISTER
     else:
-        if st.button("Register", use_container_width=True):
+        st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
+        st.subheader("Create New Account")
+
+        col1, col2 = st.columns(2)
+        with col1:
+            username = st.text_input("Choose Username")
+        with col2:
+            password = st.text_input("Create Password", type="password")
+
+        confirm = st.text_input("Confirm Password", type="password")
+
+        if st.button("Register", use_container_width=True):
             users = load_users()
 
             if username in users:
-                st.warning("User already exists")
+                st.warning("User already exists ⚠️")
+            elif password != confirm:
+                st.error("Passwords do not match ❌")
             else:
                 users[username] = {"password": password}
                 save_users(users)
-                st.success("Registered successfully")
+                st.success("Account created 🎉")
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------- MAIN ----------
 if st.session_state.user:
@@ -70,19 +140,21 @@ if st.session_state.user:
     user = st.session_state.user
     file = f"{user}_data.json"
 
-    # ---------- HEADER (YOUR VERSION) ----------
-    st.markdown("<h2 style='text-align:center;'>💰 SmartExpense Manager</h2>", unsafe_allow_html=True)
-    st.markdown(f"### 👋 Welcome to SmartExpense Manager, {user}")
+    # HEADER
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=100)
+        st.markdown("<h3 style='text-align:center;'>SmartExpense Manager</h3>", unsafe_allow_html=True)
 
-    # LOGOUT
+    st.markdown(f"### 👋 Welcome, {user}")
+
     if st.button("Logout"):
         st.session_state.user = None
         st.rerun()
 
-    # ---------- NAVIGATION ----------
-    menu = st.radio("", ["🏠 Dashboard", "➕ Add", "📋 Expenses"], horizontal=True)
+    menu = st.radio("", ["🏠 Dashboard", "➕ Add Expense", "📋 Expenses"], horizontal=True)
 
-    # ---------- LOAD DATA ----------
+    # LOAD DATA
     if os.path.exists(file):
         data = json.load(open(file))
         if isinstance(data, list):
@@ -90,53 +162,43 @@ if st.session_state.user:
     else:
         data = {"income": 0, "expenses": []}
 
-    # ---------- INCOME ----------
     income = st.number_input("Monthly Income", value=data["income"])
     data["income"] = income
     save_data(data, file)
 
     df = pd.DataFrame(data["expenses"])
 
-    # ---------- DASHBOARD ----------
+    # DASHBOARD
     if menu == "🏠 Dashboard":
+
+        st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
         total = df["amount"].sum() if not df.empty else 0
         savings = income - total
 
-        st.subheader("Summary")
-
-        st.metric("Expense", f"₹{total}")
-        st.metric("Savings", f"₹{savings}")
-        st.metric("Entries", len(df))
-
-        st.subheader("Insights")
+        st.markdown(f"<div class='card'>💸 Expense: ₹{total}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='card'>💰 Savings: ₹{savings}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='card'>📊 Entries: {len(df)}</div>", unsafe_allow_html=True)
 
         if total > income:
             st.error("Spending is high")
         elif total > income * 0.7:
-            st.warning("Spending is moderate")
+            st.warning("Moderate spending")
         else:
-            st.success("All good")
+            st.success("Good control")
 
-        st.subheader("Recent Transactions")
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        if not df.empty:
-            st.dataframe(df.tail(3), use_container_width=True)
-        else:
-            st.info("No transactions")
-
-    # ---------- ADD ----------
-    elif menu == "➕ Add":
-
-        st.subheader("Add Expense")
+    # ADD
+    elif menu == "➕ Add Expense":
 
         with st.form("form", clear_on_submit=True):
-            name = st.text_input("Name")
+            name = st.text_input("Expense Name")
             amount = st.number_input("Amount", min_value=0)
             cat = st.selectbox("Category", ["Fixed", "Optional", "Extra"])
             d = st.date_input("Date")
 
-            if st.form_submit_button("Add"):
+            if st.form_submit_button("Add Expense"):
                 data["expenses"].append({
                     "name": name,
                     "amount": amount,
@@ -144,12 +206,10 @@ if st.session_state.user:
                     "date": str(d)
                 })
                 save_data(data, file)
-                st.success("Added successfully")
+                st.success("Added successfully ✅")
 
-    # ---------- EXPENSES ----------
+    # EXPENSES
     elif menu == "📋 Expenses":
-
-        st.subheader("Expenses")
 
         search = st.text_input("Search")
 
@@ -160,16 +220,14 @@ if st.session_state.user:
         if filtered:
             for i, exp in enumerate(filtered):
 
-                st.write(f"**{exp['name']}** - ₹{exp['amount']} ({exp['category']})")
+                st.markdown(f"""
+                <div class='card'>
+                <b>{exp['name']}</b><br>
+                ₹{exp['amount']} | {exp['category']}
+                </div>
+                """, unsafe_allow_html=True)
 
-                col1, col2 = st.columns(2)
-
-                # EDIT
-                if col1.button("Edit", key=f"edit{i}"):
-                    st.info("Edit feature can be added here")
-
-                # DELETE
-                if col2.button("Delete", key=f"del{i}"):
+                if st.button("Delete", key=i):
                     data["expenses"].remove(exp)
                     save_data(data, file)
                     st.rerun()
