@@ -14,7 +14,7 @@ if "loaded" not in st.session_state:
 if not st.session_state.loaded:
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        st.image("logo.png", width=150)
+        st.image("logo.png", width=220)
         st.markdown("<h1 style='text-align:center;'>SmartExpense Manager</h1>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center;'>Loading...</p>", unsafe_allow_html=True)
 
@@ -67,12 +67,12 @@ if "user" not in st.session_state:
 # ---------- LOGIN / REGISTER ----------
 if st.session_state.user is None:
 
-    # ✅ PERFECT CENTER (ONLY THIS METHOD WORKS RELIABLY)
+    # ✅ BIG CENTERED LOGO
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        st.image("logo.png", width=140)
+        st.image("logo.png", width=220)  # 🔥 BIG LOGO
         st.markdown(
-            "<h2 style='text-align:center;'>SmartExpense Manager</h2>",
+            "<h1 style='text-align:center; margin-top:10px;'>SmartExpense Manager</h1>",
             unsafe_allow_html=True
         )
 
@@ -138,9 +138,9 @@ if st.session_state.user:
     # HEADER
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        st.image("logo.png", width=110)
+        st.image("logo.png", width=160)  # 🔥 bigger header logo
         st.markdown(
-            "<h3 style='text-align:center;'>SmartExpense Manager</h3>",
+            "<h2 style='text-align:center;'>SmartExpense Manager</h2>",
             unsafe_allow_html=True
         )
 
