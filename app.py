@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from datetime import date
 import json
 import os
 import time
@@ -13,23 +12,26 @@ if "loaded" not in st.session_state:
     st.session_state.loaded = False
 
 if not st.session_state.loaded:
+    st.markdown(
+        """
+        <div style='text-align: center; margin-top: 50px;'>
+            <img src='logo.png' width='150'/>
+            <h1>SmartExpense Manager</h1>
+            <p>Loading your experience...</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", width=150)
-        st.markdown("<h1 style='text-align:center;'>SmartExpense Manager</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;'>Loading your experience...</p>", unsafe_allow_html=True)
-
-        # Loading animation
-        progress = st.progress(0)
-        for i in range(100):
-            time.sleep(0.01)
-            progress.progress(i + 1)
+    progress = st.progress(0)
+    for i in range(100):
+        time.sleep(0.01)
+        progress.progress(i + 1)
 
     st.session_state.loaded = True
     st.rerun()
 
-# ---------- ANIMATION CSS ----------
+# ---------- CSS ANIMATIONS ----------
 st.markdown("""
 <style>
 .fade {
@@ -39,7 +41,6 @@ st.markdown("""
     from {opacity: 0; transform: translateY(20px);}
     to {opacity: 1; transform: translateY(0);}
 }
-
 .card {
     padding: 15px;
     border-radius: 15px;
@@ -73,16 +74,21 @@ def save_data(data, file):
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# ---------- LOGIN ----------
+# ---------- LOGIN / REGISTER ----------
 if st.session_state.user is None:
 
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", width=120)
-        st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
+    # CENTERED LOGO + TITLE
+    st.markdown(
+        """
+        <div style='text-align: center; margin-top: 20px;'>
+            <img src='logo.png' width='120'/>
+            <h2>SmartExpense Manager</h2>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     option = st.radio("", ["🔐 Login", "🆕 Register"], horizontal=True)
-
     users = load_users()
 
     # LOGIN
@@ -90,7 +96,6 @@ if st.session_state.user is None:
         st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
         st.subheader("Login to your account")
-
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -127,6 +132,8 @@ if st.session_state.user is None:
                 st.warning("User already exists ⚠️")
             elif password != confirm:
                 st.error("Passwords do not match ❌")
+            elif username == "" or password == "":
+                st.warning("Fill all fields")
             else:
                 users[username] = {"password": password}
                 save_users(users)
@@ -134,17 +141,22 @@ if st.session_state.user is None:
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- MAIN ----------
+# ---------- MAIN APP ----------
 if st.session_state.user:
 
     user = st.session_state.user
     file = f"{user}_data.json"
 
-    # HEADER
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", width=100)
-        st.markdown("<h3 style='text-align:center;'>SmartExpense Manager</h3>", unsafe_allow_html=True)
+    # HEADER (CENTERED)
+    st.markdown(
+        f"""
+        <div style='text-align: center;'>
+            <img src='logo.png' width='100'/>
+            <h3>SmartExpense Manager</h3>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.markdown(f"### 👋 Welcome, {user}")
 
@@ -162,6 +174,7 @@ if st.session_state.user:
     else:
         data = {"income": 0, "expenses": []}
 
+    # INCOME
     income = st.number_input("Monthly Income", value=data["income"])
     data["income"] = income
     save_data(data, file)
