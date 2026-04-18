@@ -12,16 +12,19 @@ if "loaded" not in st.session_state:
     st.session_state.loaded = False
 
 if not st.session_state.loaded:
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", width=150)
-        st.markdown("<h1 style='text-align:center;'>SmartExpense Manager</h1>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center;'>Loading your experience...</p>", unsafe_allow_html=True)
+    st.markdown("""
+        <div style='text-align: center; margin-top: 50px;'>
+            <h1>SmartExpense Manager</h1>
+            <p>Loading your experience...</p>
+        </div>
+    """, unsafe_allow_html=True)
 
-        progress = st.progress(0)
-        for i in range(100):
-            time.sleep(0.01)
-            progress.progress(i + 1)
+    st.image("logo.png", width=150)
+
+    progress = st.progress(0)
+    for i in range(100):
+        time.sleep(0.01)
+        progress.progress(i + 1)
 
     st.session_state.loaded = True
     st.rerun()
@@ -36,6 +39,7 @@ st.markdown("""
     from {opacity: 0; transform: translateY(20px);}
     to {opacity: 1; transform: translateY(0);}
 }
+
 .card {
     padding: 15px;
     border-radius: 15px;
@@ -46,6 +50,13 @@ st.markdown("""
 .card:hover {
     transform: scale(1.03);
     box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+/* PERFECT CENTER FIX */
+.center-img {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -72,25 +83,36 @@ if "user" not in st.session_state:
 # ---------- LOGIN / REGISTER ----------
 if st.session_state.user is None:
 
-    # ✅ PERFECT CENTER LOGO (FIXED)
-    st.markdown(
-    """
-    <style>
-    .center-img {
-        display: flex;
-        justify-content: center;
-        margin-top: 10px;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+    # ✅ PERFECT CENTER LOGO
+    st.markdown("<div class='center-img'>", unsafe_allow_html=True)
+    st.image("logo.png", width=120)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='center-img'>", unsafe_allow_html=True)
-st.image("logo.png", width=120)
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
 
-st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
+    option = st.radio("", ["🔐 Login", "🆕 Register"], horizontal=True)
+    users = load_users()
+
+    # LOGIN
+    if option == "🔐 Login":
+        st.markdown("<div class='fade'>", unsafe_allow_html=True)
+
+        st.subheader("Login to your account")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login", use_container_width=True):
+            users = load_users()
+
+            if username in users and users[username]["password"] == password:
+                st.session_state.user = username
+                st.success("Login successful ✅")
+                st.rerun()
+            else:
+                st.error("Invalid username or password ❌")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
     # REGISTER
     else:
         st.markdown("<div class='fade'>", unsafe_allow_html=True)
@@ -127,12 +149,12 @@ if st.session_state.user:
     user = st.session_state.user
     file = f"{user}_data.json"
 
-    # ✅ HEADER WITH CENTERED LOGO
-    col1, col2, col3 = st.columns([1,2,1])
-    with col2:
-        st.image("logo.png", width=100)
-        st.markdown("<h3 style='text-align:center;'>SmartExpense Manager</h3>", unsafe_allow_html=True)
+    # ✅ HEADER WITH PERFECT CENTER
+    st.markdown("<div class='center-img'>", unsafe_allow_html=True)
+    st.image("logo.png", width=100)
+    st.markdown("</div>", unsafe_allow_html=True)
 
+    st.markdown("<h3 style='text-align:center;'>SmartExpense Manager</h3>", unsafe_allow_html=True)
     st.markdown(f"### 👋 Welcome, {user}")
 
     if st.button("Logout"):
