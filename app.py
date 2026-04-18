@@ -12,51 +12,35 @@ if "loaded" not in st.session_state:
     st.session_state.loaded = False
 
 if not st.session_state.loaded:
-    st.markdown("""
-        <div style='text-align: center; margin-top: 50px;'>
-            <h1>SmartExpense Manager</h1>
-            <p>Loading your experience...</p>
-        </div>
-    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=150)
+        st.markdown("<h1 style='text-align:center;'>SmartExpense Manager</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center;'>Loading...</p>", unsafe_allow_html=True)
 
-    st.image("logo.png", width=150)
-
-    progress = st.progress(0)
-    for i in range(100):
-        time.sleep(0.01)
-        progress.progress(i + 1)
+        progress = st.progress(0)
+        for i in range(100):
+            time.sleep(0.01)
+            progress.progress(i + 1)
 
     st.session_state.loaded = True
     st.rerun()
 
-# ---------- CSS ----------
+# ---------- STYLE ----------
 st.markdown("""
 <style>
 .fade {
-    animation: fadeIn 0.7s ease-in-out;
+    animation: fadeIn 0.5s ease-in-out;
 }
 @keyframes fadeIn {
-    from {opacity: 0; transform: translateY(20px);}
-    to {opacity: 1; transform: translateY(0);}
+    from {opacity: 0;}
+    to {opacity: 1;}
 }
-
 .card {
     padding: 15px;
-    border-radius: 15px;
+    border-radius: 12px;
     background: rgba(255,255,255,0.05);
-    margin-bottom: 12px;
-    transition: 0.3s;
-}
-.card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 15px rgba(0,0,0,0.3);
-}
-
-/* PERFECT CENTER FIX */
-.center-img {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+    margin-bottom: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -83,12 +67,14 @@ if "user" not in st.session_state:
 # ---------- LOGIN / REGISTER ----------
 if st.session_state.user is None:
 
-    # ✅ PERFECT CENTER LOGO
-    st.markdown("<div class='center-img'>", unsafe_allow_html=True)
-    st.image("logo.png", width=120)
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<h2 style='text-align:center;'>SmartExpense Manager</h2>", unsafe_allow_html=True)
+    # ✅ PERFECT CENTER (ONLY THIS METHOD WORKS RELIABLY)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=140)
+        st.markdown(
+            "<h2 style='text-align:center;'>SmartExpense Manager</h2>",
+            unsafe_allow_html=True
+        )
 
     option = st.radio("", ["🔐 Login", "🆕 Register"], horizontal=True)
     users = load_users()
@@ -97,7 +83,7 @@ if st.session_state.user is None:
     if option == "🔐 Login":
         st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
-        st.subheader("Login to your account")
+        st.subheader("Login")
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -109,7 +95,7 @@ if st.session_state.user is None:
                 st.success("Login successful ✅")
                 st.rerun()
             else:
-                st.error("Invalid username or password ❌")
+                st.error("Invalid credentials ❌")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -117,13 +103,13 @@ if st.session_state.user is None:
     else:
         st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
-        st.subheader("Create New Account")
+        st.subheader("Register")
 
         col1, col2 = st.columns(2)
         with col1:
-            username = st.text_input("Choose Username")
+            username = st.text_input("Username")
         with col2:
-            password = st.text_input("Create Password", type="password")
+            password = st.text_input("Password", type="password")
 
         confirm = st.text_input("Confirm Password", type="password")
 
@@ -131,30 +117,33 @@ if st.session_state.user is None:
             users = load_users()
 
             if username in users:
-                st.warning("User already exists ⚠️")
+                st.warning("User already exists")
             elif password != confirm:
-                st.error("Passwords do not match ❌")
+                st.error("Passwords do not match")
             elif username == "" or password == "":
                 st.warning("Fill all fields")
             else:
                 users[username] = {"password": password}
                 save_users(users)
-                st.success("Account created 🎉")
+                st.success("Registered successfully 🎉")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- MAIN APP ----------
+# ---------- MAIN ----------
 if st.session_state.user:
 
     user = st.session_state.user
     file = f"{user}_data.json"
 
-    # ✅ HEADER WITH PERFECT CENTER
-    st.markdown("<div class='center-img'>", unsafe_allow_html=True)
-    st.image("logo.png", width=100)
-    st.markdown("</div>", unsafe_allow_html=True)
+    # HEADER
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        st.image("logo.png", width=110)
+        st.markdown(
+            "<h3 style='text-align:center;'>SmartExpense Manager</h3>",
+            unsafe_allow_html=True
+        )
 
-    st.markdown("<h3 style='text-align:center;'>SmartExpense Manager</h3>", unsafe_allow_html=True)
     st.markdown(f"### 👋 Welcome, {user}")
 
     if st.button("Logout"):
@@ -171,7 +160,6 @@ if st.session_state.user:
     else:
         data = {"income": 0, "expenses": []}
 
-    # INCOME
     income = st.number_input("Monthly Income", value=data["income"])
     data["income"] = income
     save_data(data, file)
@@ -180,7 +168,6 @@ if st.session_state.user:
 
     # DASHBOARD
     if menu == "🏠 Dashboard":
-
         st.markdown("<div class='fade'>", unsafe_allow_html=True)
 
         total = df["amount"].sum() if not df.empty else 0
@@ -208,7 +195,7 @@ if st.session_state.user:
             cat = st.selectbox("Category", ["Fixed", "Optional", "Extra"])
             d = st.date_input("Date")
 
-            if st.form_submit_button("Add Expense"):
+            if st.form_submit_button("Add"):
                 data["expenses"].append({
                     "name": name,
                     "amount": amount,
@@ -216,7 +203,7 @@ if st.session_state.user:
                     "date": str(d)
                 })
                 save_data(data, file)
-                st.success("Added successfully ✅")
+                st.success("Added successfully")
 
     # EXPENSES
     elif menu == "📋 Expenses":
@@ -241,6 +228,5 @@ if st.session_state.user:
                     data["expenses"].remove(exp)
                     save_data(data, file)
                     st.rerun()
-
         else:
             st.info("No expenses found")
